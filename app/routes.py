@@ -1,13 +1,12 @@
 from app import app
 from flask import render_template, redirect, url_for, flash
-from app.forms import SignUpForm, PostForm, LoginForm
-from app.models import User, Post
+from app.forms import SignUpForm, LoginForm
+from app.models import User
 from flask_login import login_user, logout_user, login_required, current_user
 
 @app.route('/')
 def index():
-    posts = Post.query.all()
-    return render_template('index.html', posts=posts)
+    return render_template('index.html')
 
 
 @app.route('/signup', methods=["GET", "POST"])
@@ -26,22 +25,9 @@ def signup():
         new_user = User(email=email, username=username, password=password)
         flash(f"{new_user.username} has been created.", "success")
         return redirect(url_for('index'))
+
     return render_template('signup.html', form=form)
 
-# don't need posting
-@app.route('/create', methods=['GET', 'POST'])
-@login_required
-def create():
-    form = PostForm()
-    if form.validate_on_submit():
-        title = form.title.data
-        body = form.body.data
-        new_post = Post(title=title, body=body, user_id=current_user.id)
-        flash(f'{new_post.title} has been created.', 'secondary')
-        return redirect(url_for('index'))
-
-    return render_template('createpost.html', form=form)
-# end dont need posting
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -67,36 +53,12 @@ def logout():
     flash('You have successfully logged out.', 'primary')
     return redirect(url_for('index'))
 
-@app.route('/posts/<post_id>')
+@app.route('/delete')
 @login_required
-def view_post(post_id):
-    post = Post.query.get_or_404(post_id)
-    return render_template('post.html', post=post)
-
-@app.route('/posts/<post_id>/edit', methods=['GET', 'POST'])
-@login_required
-def edit_post(post_id):
-    post_to_edit = Post.query.get_or_404(post_id)
-    if post_to_edit.author != current_user:
-        flash("You do not have permission to edit this post", "danger")
-        return redirect(url_for('view_post', post_id=post_id))
-    form = PostForm()
-    if form.validate_on_submit():
-        title = form.title.data
-        body = form.body.data
-        post_to_edit.update(title=title, body=body)
-        flash(f'{post_to_edit.title} has been updated', 'success')
-        return redirect(url_for('view_post', post_id=post_id))
-
-    return render_template('edit_post.html', post=post_to_edit, form=form)
-
-@app.route('/posts/<post_id>/delete')
-@login_required
-def delete_post(post_id):
-    post_to_delete = Post.query.get_or_404(post_id)
-    if post_to_delete.author != current_user:
-        flash("You do not have permission to delete this post", "danger")
+def delete_user(self):
+    if self.author != current_user:
+        flash("You do not have permission to delete this account", "danger")
         return redirect(url_for('index'))
-    post_to_delete.delete()
-    flash(f'{post_to_delete.title} has been deleted', 'info')
+    self.delete()
+    flash(f'{self.user} has been deleted', 'info')
     return redirect(url_for('index'))
