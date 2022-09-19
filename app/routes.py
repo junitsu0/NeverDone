@@ -53,7 +53,7 @@ def logout():
     flash('You have successfully logged out.', 'primary')
     return redirect(url_for('index'))
 
-@app.route('/delete')
+@app.route('/delete', methods=['GET', 'POST'])
 @login_required
 def delete_user(self):
     if self.author != current_user:

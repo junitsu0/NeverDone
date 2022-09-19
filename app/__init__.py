@@ -18,5 +18,5 @@ login.login_message = 'You must be logged in to do that'
 login.login_message_category = 'danger'
 
 
-from . import routes, models
+from . import routes2, models
 
